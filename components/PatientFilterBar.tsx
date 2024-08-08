@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { User } from "@prisma/client";
 import { useSelectedPatients } from "../stores/selectedPatientsStore";
-import { patientService } from "../services/patientService";
+import { patientService } from "../services/db/patientService";
 
 const PatientFilterBar: React.FC = () => {
     const { selectedPatients, removePatient } = useSelectedPatients();

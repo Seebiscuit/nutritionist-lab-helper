@@ -1,5 +1,5 @@
 import { PrismaClient, Snippet } from '@prisma/client';
-import { fuzzySearch } from '../util/fuzzySearch';
+import { fuzzySearch } from '../../util/fuzzySearch';
 
 const prisma = new PrismaClient();
 

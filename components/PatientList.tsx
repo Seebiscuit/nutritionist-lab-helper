@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { User, PatientGroup } from "@prisma/client";
-import { patientService } from "../services/patientService";
-import { groupService } from "../services/groupService";
+import { patientService } from "../services/db/patientService";
+import { groupService } from "../services/db/groupService";
 import { useSelectedPatients } from "../stores/selectedPatientsStore";
 
 interface PatientListProps {

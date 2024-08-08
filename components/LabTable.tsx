@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Lab } from "@prisma/client";
-import { labService } from "../services/labService";
+import { labService } from "../services/db/labService";
 import { useSelectedPatients } from "../stores/selectedPatientsStore";
+import { JsonObject } from "@prisma/client/runtime/library";
 
-interface LabResult {
+interface LabResult extends JsonObject {
     column: string;
     value: string;
     annotations: string;

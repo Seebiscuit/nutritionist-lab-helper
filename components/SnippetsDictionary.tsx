@@ -1,6 +1,8 @@
+"use client"
+
 import React, { useState, useEffect } from "react";
 import { Snippet } from "@prisma/client";
-import { snippetService } from "../services/snippetService";
+import { snippetService } from "../services/db/snippetService";
 
 const SnippetsDictionary: React.FC = () => {
     const [snippets, setSnippets] = useState<Snippet[]>([]);

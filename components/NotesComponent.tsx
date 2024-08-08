@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Note } from "@prisma/client";
-import { noteService } from "../services/noteService";
+import { noteService } from "../services/db/noteService";
 import { UndoService } from "../services/undoService";
 import NotesTokenizer from "./NotesTokenizer";
 

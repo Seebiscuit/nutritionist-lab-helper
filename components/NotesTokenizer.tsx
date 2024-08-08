@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { snippetService } from "../services/snippetService";
+import { snippetService } from "../services/db/snippetService";
 import { cursorPositioningService } from "../services/cursorPositioningService";
 
 interface NotesTokenizerProps {

@@ -1,4 +1,4 @@
-import { noteService } from './noteService';
+import { noteService } from './db/noteService';
 
 interface UndoState {
     patientId: number;
