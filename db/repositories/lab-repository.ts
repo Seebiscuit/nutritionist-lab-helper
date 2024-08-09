@@ -36,7 +36,7 @@ export const labService = {
             const patientName = record.SortNameField0;
             const collectedDate = new Date(record.CollDateField1);
 
-            const patient = await prisma.user.findFirst({ where: { name: patientName } });
+            const patient = await prisma.patient.findFirst({ where: { name: patientName } });
             if (!patient) {
                 console.error(`Patient not found: ${patientName}`);
                 continue;

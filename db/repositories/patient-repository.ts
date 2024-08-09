@@ -21,6 +21,12 @@ export const patientService = {
         });
     },
 
+    async createPatients(names: string[]): Promise<Patient[]> {
+        return prisma.patient.createManyAndReturn({
+            data: names.map((name) => ({ name })),
+        });
+    },
+
     async updatePatient(id: number, name: string): Promise<Patient> {
         return prisma.patient.update({
             where: { id },
