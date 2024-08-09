@@ -2,7 +2,7 @@ import { PrismaClient, PatientGroup, PatientGroupMembership } from '@prisma/clie
 
 const prisma = new PrismaClient();
 
-export const groupService = {
+export const groupRepository = {
     async getAllGroups(): Promise<PatientGroup[]> {
         return prisma.patientGroup.findMany({
             where: { deleted: false },

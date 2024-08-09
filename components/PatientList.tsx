@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { User, PatientGroup } from "@prisma/client";
-import { patientService } from "../services/db/patientService";
-import { groupService } from "../services/db/groupService";
+import { patientRepository } from "../db/repositories/patient-repository";
+import { groupRepository } from "../db/repositories/group-repository";
 import { useSelectedPatients } from "../stores/selectedPatientsStore";
 
 interface PatientListProps {
@@ -21,18 +21,18 @@ const PatientList: React.FC<PatientListProps> = ({ onPatientSelect }) => {
     }, []);
 
     const fetchPatients = async () => {
-        const fetchedPatients = await patientService.getAllPatients();
+        const fetchedPatients = await patientRepository.getAllPatients();
         setPatients(fetchedPatients);
     };
 
     const fetchGroups = async () => {
-        const fetchedGroups = await groupService.getAllGroups();
+        const fetchedGroups = await groupRepository.getAllGroups();
         setGroups(fetchedGroups);
     };
 
     const handleCreateGroup = async () => {
         if (newGroupName && selectedPatients.length > 0) {
-            await groupService.createGroup(newGroupName, selectedPatients);
+            await groupRepository.createGroup(newGroupName, selectedPatients);
             setNewGroupName("");
             setShowGroupForm(false);
             clearSelection();
@@ -41,13 +41,13 @@ const PatientList: React.FC<PatientListProps> = ({ onPatientSelect }) => {
     };
 
     const handleDeleteGroup = async (groupId: number) => {
-        await groupService.deleteGroup(groupId);
+        await groupRepository.deleteGroup(groupId);
         fetchGroups();
     };
 
     const handleSelectGroup = async (groupId: number) => {
         clearSelection();
-        const groupMembers = await groupService.getGroupMembers(groupId);
+        const groupMembers = await groupRepository.getGroupMembers(groupId);
         
         if (!groupMembers?.length) return;
         

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { User } from "@prisma/client";
 import { useSelectedPatients } from "../stores/selectedPatientsStore";
-import { patientService } from "../services/db/patientService";
+import { patientRepository } from "../db/repositories/patient-repository";
 
 const PatientFilterBar: React.FC = () => {
     const { selectedPatients, removePatient } = useSelectedPatients();
@@ -10,7 +10,7 @@ const PatientFilterBar: React.FC = () => {
 
     useEffect(() => {
         const fetchSelectedPatients = async () => {
-            const fetchedPatients = await Promise.all(selectedPatients.map((id) => patientService.getPatientById(id)));
+            const fetchedPatients = await Promise.all(selectedPatients.map((id) => patientRepository.getPatientById(id)));
             setPatients(fetchedPatients.filter((p): p is User => p !== null));
         };
         fetchSelectedPatients();

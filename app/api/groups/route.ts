@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { groupService } from '@/db/repositories/group-repository';  // Adjust the import path as needed
+import { groupRepository } from '@/db/repositories/group-repository';  // Adjust the import path as needed
 
 type HandlerFunction = (req: NextRequest) => Promise<NextResponse>;
 
@@ -18,7 +18,7 @@ const withErrorHandling = (handler: HandlerFunction): HandlerFunction => {
 };
 
 export const GET = withErrorHandling(async () => {
-    const groups = await groupService.getAllGroups();
+    const groups = await groupRepository.getAllGroups();
     return NextResponse.json(groups);
 });
 
@@ -27,7 +27,7 @@ export const POST = withErrorHandling(async (req) => {
     if (!name || !Array.isArray(patientIds)) {
         return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
     }
-    const newGroup = await groupService.createGroup(name, patientIds);
+    const newGroup = await groupRepository.createGroup(name, patientIds);
     return NextResponse.json(newGroup, { status: 201 });
 });
 
@@ -36,7 +36,7 @@ export const PUT = withErrorHandling(async (req) => {
     if (!id || !name || !Array.isArray(patientIds)) {
         return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
     }
-    const updatedGroup = await groupService.updateGroup(id, name, patientIds);
+    const updatedGroup = await groupRepository.updateGroup(id, name, patientIds);
     return NextResponse.json(updatedGroup);
 });
 
@@ -45,6 +45,6 @@ export const DELETE = withErrorHandling(async (req) => {
     if (!id) {
         return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
     }
-    const deletedGroup = await groupService.deleteGroup(id);
+    const deletedGroup = await groupRepository.deleteGroup(id);
     return NextResponse.json(deletedGroup);
 });

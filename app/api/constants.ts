@@ -9,3 +9,5 @@ export const GROUPS_QUERY_KEY = 'groups';
 
 export const PATIENTS_ROUTE = 'patients';
 export const PATIENTS_QUERY_KEY = 'patients';
+
+export const BEGINNING_OF_EPOCH_TIME = 0;

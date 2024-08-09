@@ -3,7 +3,7 @@ import { fuzzySearch } from '../../util/fuzzySearch';
 
 const prisma = new PrismaClient();
 
-export const snippetService = {
+export const snippetRepository = {
     async getAllSnippets(): Promise<Snippet[]> {
         return prisma.snippet.findMany({
             orderBy: { key: 'asc' },

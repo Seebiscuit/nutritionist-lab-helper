@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Lab } from "@prisma/client";
-import { labService } from "../services/db/labService";
+import { labRepository } from "../db/repositories/lab-repository";
 import { useSelectedPatients } from "../stores/selectedPatientsStore";
 import { JsonObject } from "@prisma/client/runtime/library";
 
@@ -21,7 +21,7 @@ const LabTable: React.FC = () => {
     }, [selectedPatients, dateRange]);
 
     const fetchLabs = async () => {
-        const allLabs = await Promise.all(selectedPatients.map((patientId) => labService.getLabsForPatient(patientId)));
+        const allLabs = await Promise.all(selectedPatients.map((patientId) => labRepository.getLabsForPatient(patientId)));
         const flattenedLabs = allLabs.flat();
         const filteredLabs = filterLabsByDateRange(flattenedLabs);
         setLabs(filteredLabs);

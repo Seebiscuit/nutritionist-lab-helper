@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Snippet } from "@prisma/client";
-import { snippetService } from "../services/db/snippetService";
+import { snippetRepository } from "../db/repositories/snippet-repository";
 
 const SnippetsDictionary: React.FC = () => {
     const [snippets, setSnippets] = useState<Snippet[]>([]);
@@ -14,13 +14,13 @@ const SnippetsDictionary: React.FC = () => {
     }, []);
 
     const fetchSnippets = async () => {
-        const fetchedSnippets = await snippetService.getAllSnippets();
+        const fetchedSnippets = await snippetRepository.getAllSnippets();
         setSnippets(fetchedSnippets);
     };
 
     const handleCreateSnippet = async () => {
         if (newSnippet.key && newSnippet.content) {
-            await snippetService.createSnippet(newSnippet.key, newSnippet.content);
+            await snippetRepository.createSnippet(newSnippet.key, newSnippet.content);
             setNewSnippet({ key: "", content: "" });
             fetchSnippets();
         }
@@ -28,14 +28,14 @@ const SnippetsDictionary: React.FC = () => {
 
     const handleUpdateSnippet = async () => {
         if (editingSnippet) {
-            await snippetService.updateSnippet(editingSnippet.id, editingSnippet.key, editingSnippet.content);
+            await snippetRepository.updateSnippet(editingSnippet.id, editingSnippet.key, editingSnippet.content);
             setEditingSnippet(null);
             fetchSnippets();
         }
     };
 
     const handleDeleteSnippet = async (id: number) => {
-        await snippetService.deleteSnippet(id);
+        await snippetRepository.deleteSnippet(id);
         fetchSnippets();
     };
 

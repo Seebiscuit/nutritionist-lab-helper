@@ -2,7 +2,7 @@ import { PrismaClient, Patient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export const patientService = {
+export const patientRepository = {
     async getAllPatients(): Promise<Patient[]> {
         return prisma.patient.findMany({
             orderBy: { name: 'asc' },

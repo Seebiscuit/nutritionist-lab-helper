@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Note } from "@prisma/client";
-import { noteService } from "../services/db/noteService";
+import { noteRepository } from "../db/repositories/note-repository";
 import { UndoService } from "../services/undoService";
 import NotesTokenizer from "./NotesTokenizer";
 
@@ -20,7 +20,7 @@ const NotesComponent: React.FC<NotesComponentProps> = ({ patientId }) => {
     }, [patientId]);
 
     const fetchNotes = async () => {
-        const fetchedNotes = await noteService.getNotesForPatient(patientId);
+        const fetchedNotes = await noteRepository.getNotesForPatient(patientId);
         setNotes(fetchedNotes);
         setCurrentNote(fetchedNotes.map((note) => note.content).join("\n\n") + "\n\n");
     };
@@ -45,7 +45,7 @@ const NotesComponent: React.FC<NotesComponentProps> = ({ patientId }) => {
     };
 
     const handleSaveNote = async () => {
-        await noteService.createNote(patientId, currentNote);
+        await noteRepository.createNote(patientId, currentNote);
         fetchNotes();
     };
 

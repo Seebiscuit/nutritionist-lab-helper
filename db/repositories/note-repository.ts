@@ -2,7 +2,7 @@ import { PrismaClient, Note } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export const noteService = {
+export const noteRepository = {
     async getNotesForPatient(patientId: number): Promise<Note[]> {
         return prisma.note.findMany({
             where: { userId: patientId },

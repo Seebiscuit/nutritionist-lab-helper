@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { snippetService } from "../services/db/snippetService";
+import { snippetRepository } from "../db/repositories/snippet-repository";
 import { cursorPositioningService } from "../services/cursorPositioningService";
 
 interface NotesTokenizerProps {
@@ -25,7 +25,7 @@ const NotesTokenizer: React.FC<NotesTokenizerProps> = ({ value, onChange, textar
     }, [snippetQuery]);
 
     const searchSnippets = async () => {
-        const results = await snippetService.searchSnippets(snippetQuery);
+        const results = await snippetRepository.searchSnippets(snippetQuery);
         setSnippetResults(results.map((snippet) => snippet.content));
         setShowResults(true);
         setSelectedIndex(0);
