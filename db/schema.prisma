@@ -16,23 +16,15 @@ model Patient {
   name      String
   labs      Lab[]
   notes     Note[]
-  groups    PatientGroupMembership[]
+  groups    PatientGroup[] 
 	@@map("Patient")
 }
 
 model PatientGroup {
   id        Int      @id @default(autoincrement())
   name      String
-  members   PatientGroupMembership[]
+  members   Patient[] 
   deleted   Boolean  @default(false)
-}
-
-model PatientGroupMembership {
-  id        Int      @id @default(autoincrement())
-  patient      Patient     @relation(fields: [patientId], references: [id])
-  patientId    Int
-  group     PatientGroup @relation(fields: [groupId], references: [id])
-  groupId   Int
 }
 
 model Lab {
