@@ -6,7 +6,7 @@ export const groupRepository = {
     async getAllGroups(): Promise<PatientGroup[]> {
         return prisma.patientGroup.findMany({
             where: { deleted: false },
-            include: { members: { include: { user: true } } },
+            include: { members: true },
         });
     },
 
@@ -15,10 +15,10 @@ export const groupRepository = {
             data: {
                 name,
                 members: {
-                    create: patientIds.map(userId => ({ userId })),
+                    create: patientIds.map(patientId => ({ patientId })),
                 },
             },
-            include: { members: { include: { user: true } } },
+            include: { members: { include: { patient: true } } },
         });
     },
 
@@ -32,10 +32,10 @@ export const groupRepository = {
             data: {
                 name,
                 members: {
-                    create: patientIds.map(userId => ({ userId })),
+                    create: patientIds.map(patientId => ({ patientId })),
                 },
             },
-            include: { members: { include: { user: true } } },
+            include: { members: { include: { patient: true } } },
         });
     },
 
@@ -49,7 +49,7 @@ export const groupRepository = {
     async getGroupMembers(groupId: number): Promise<PatientGroupMembership[]> {
         return prisma.patientGroupMembership.findMany({
             where: { groupId },
-            include: { user: true },
+            include: { patient: true },
         });
     },
 };
