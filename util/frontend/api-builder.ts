@@ -18,7 +18,7 @@ class ApiBuilder {
     };
 
     constructor(endpoint: string) {
-        this.url = `${API_BASE_URL}${endpoint}`;
+        this.url = `${API_BASE_URL}/${endpoint}`;
     }
 
     method(method: HttpMethod): ApiBuilder {

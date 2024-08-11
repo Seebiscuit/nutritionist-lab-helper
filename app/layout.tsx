@@ -19,10 +19,10 @@ export default function RootLayout({
         <html lang="en">
             <body className={inter.className}>
                 <div className="min-h-screen flex flex-col">
-<Header />
+                    <Header />
                     <main className="flex-grow container mx-auto p-4">{children}</main>
                     <footer className="bg-gray-200 p-4 text-center">
-                        <p>&copy; 2024 Nutritionist Lab Helper. All rights reserved.</p>
+                        <p>&copy; {new Date().getFullYear()} Nutritionist Lab Helper. All rights reserved.</p>
                     </footer>
                 </div>
             </body>

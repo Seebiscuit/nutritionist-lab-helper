@@ -1,4 +1,4 @@
-import { noteService } from './db/noteService';
+import { noteRepository } from '../db/repositories/note-repository';
 
 interface UndoState {
     patientId: number;
@@ -59,7 +59,7 @@ export class UndoService {
 
     private async saveNote() {
         if (this.currentState) {
-            await noteService.createNote(this.currentState.patientId, this.currentState.content);
+            await noteRepository.createNote(this.currentState.patientId, this.currentState.content);
         }
     }
 }
