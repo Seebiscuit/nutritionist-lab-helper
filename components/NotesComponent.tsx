@@ -60,7 +60,7 @@ const NotesComponent: React.FC<NotesComponentProps> = ({ patientId }) => {
                     <button onClick={handleRedo} className="mr-2 p-1 bg-gray-200 rounded">
                         Redo
                     </button>
-                    <button onClick={() => setIsExpanded(!isExpanded)} className="p-1 bg-blue-500 text-white rounded">
+                    <button onClick={() => setIsExpanded(!isExpanded)} className="p-1 bg-purple-500 text-white rounded">
                         {isExpanded ? "Collapse" : "Expand"}
                     </button>
                 </div>

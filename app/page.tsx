@@ -1,7 +1,6 @@
 "use client"
 import React, { useState } from "react";
 import PatientList from "../components/PatientList";
-import PatientFilterBar from "../components/PatientFilterBar";
 import LabTable from "../components/LabTable";
 import NotesComponent from "../components/NotesComponent";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -17,23 +16,24 @@ const LabsPage: React.FC = () => {
         <QueryClientProvider client={queryClient}>
             <SelectedPatientsProvider>
                 <div className="flex">
-                    <PatientList onPatientSelect={setSelectedPatientId} />
-                    <div className="flex-grow p-4">
-                        <PatientFilterBar />
+                    <div className="content-height sidebar-width h-screen overflow-y-auto">
+                        <PatientList onPatientSelect={setSelectedPatientId} />
+                    </div>
+                    <div className="content-height content-width flex-grow py-4 pl-3 w-6/7 h-screen overflow-auto">
                         <div className="mb-4">
                             <button
                                 onClick={() => setShowNotes(!showNotes)}
-                                className="bg-blue-500 text-white px-4 py-2 rounded"
+                                className="bg-purple-500 text-white px-4 py-2 rounded"
                             >
                                 {showNotes ? "Hide Notes" : "Show Notes"}
                             </button>
                         </div>
                         <div className="flex">
-                            <div className={`flex-grow ${showNotes ? "w-1/2" : "w-full"}`}>
+                            <div className={`flex-grow ${showNotes ? "h-1/2" : "h-full"}`}>
                                 <LabTable />
                             </div>
                             {showNotes && selectedPatientId && (
-                                <div className="w-1/2 ml-4">
+                                <div className="h-1/2 ml-4">
                                     <NotesComponent patientId={selectedPatientId} />
                                 </div>
                             )}

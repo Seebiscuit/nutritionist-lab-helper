@@ -1,3 +1,59 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+    --foreground-rgb: 0, 0, 0;
+    --background-start-rgb: 214, 219, 220;
+    --background-end-rgb: 255, 255, 255;
+
+    --header-height: 3rem;
+    --footer-height: 2rem;
+    --content-height:calc(100vh - var(--header-height) - var(--footer-height));
+
+    --sidebar-width: 16rem;
+    --content-left-padding: 0.25rem;
+    --content-width: calc(100vw - var(--sidebar-width) - var(--content-left-padding));
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --foreground-rgb: 200, 200, 200;
+        --background-start-rgb: 44,17,79;
+        --background-end-rgb: 14,8,24;
+    }
+}
+
+
+.header-height {
+    height: var(--header-height);
+}
+
+.footer-height {
+    height: var(--footer-height);
+}
+
+.sidebar-width {
+    width: var(--sidebar-width);
+}
+
+.content-height {
+    height: var(--content-height);
+}
+
+.content-width {
+    width: var(--content-width);
+}
+
+body {
+    color: rgb(var(--foreground-rgb));
+    background: linear-gradient(to bottom,
+            transparent,
+            rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
+}
+
+@layer utilities {
+    .text-balance {
+        text-wrap: balance;
+    }
+}

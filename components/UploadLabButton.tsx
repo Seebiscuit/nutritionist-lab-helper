@@ -23,7 +23,7 @@ export default function UploadLabButton() {
         <div className="flex justify-center">
             <label
                 htmlFor="upload-lab-button"
-                className="cursor-pointer bg-blue-100 hover:bg-blue-700 text-blue-500 font-bold py-2 px-4 rounded"
+                className="cursor-pointer bg-purple-100 hover:bg-purple-700 text-purple-500 font-bold py-2 px-4 rounded"
             >
                 {labUpload.isPending ? "Uploading..." : "Upload Labs"}
             </label>

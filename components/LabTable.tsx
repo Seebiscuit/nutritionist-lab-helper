@@ -1,127 +1,140 @@
-import React, { useState, useEffect } from "react";
-import { Lab } from "@prisma/client";
-import { labRepository } from "../db/repositories/lab-repository";
+import React, { useState, useEffect, useMemo } from "react";
 import { useSelectedPatients } from "../stores/selectedPatientsStore";
+import { useFetchPatientsWithLabs } from "../services/http/usePatients";
+import { Prisma } from "@prisma/client";
 import { JsonObject } from "@prisma/client/runtime/library";
+import { LAB_FIELDS } from "@/services/enums/lab-fields";
+
+type PatientLab = Prisma.LabGetPayload<{}> & { patientName: string };
 
 interface LabResult extends JsonObject {
     column: string;
     value: string;
     annotations: string;
+    isVirtual?: boolean;
 }
 
 const LabTable: React.FC = () => {
     const { selectedPatients } = useSelectedPatients();
-    const [labs, setLabs] = useState<Lab[]>([]);
+    const { data: patientsWithLabs, isLoading, error } = useFetchPatientsWithLabs(selectedPatients);
     const [dateRange, setDateRange] = useState<string>("last");
-    const [pinnedNotes, setPinnedNotes] = useState<{ [key: string]: boolean }>({});
+    const labs = useMemo(() => {
+        if (!patientsWithLabs) return [];
 
-    useEffect(() => {
-        fetchLabs();
-    }, [selectedPatients, dateRange]);
+        return patientsWithLabs
+            .filter((patient) => selectedPatients.includes(patient.id))
+            .flatMap((patient) => {
+                return patient.labs.map((lab) => {
+                    const labResults = lab.results as LabResult[];
+                    LAB_FIELDS.forEach((field) => {
+                        if (!labResults.some((result) => result.column === field)) {
+                            labResults.push({
+                                column: field,
+                                value: "",
+                                annotations: "",
+                                isVirtual: true,
+                            });
+                        }
+                    });
 
-    const fetchLabs = async () => {
-        const allLabs = await Promise.all(selectedPatients.map((patientId) => labRepository.getLabsForPatient(patientId)));
-        const flattenedLabs = allLabs.flat();
-        const filteredLabs = filterLabsByDateRange(flattenedLabs);
-        setLabs(filteredLabs);
-    };
+                    return { ...lab, patientName: patient.name };
+                });
+            });
+    }, [patientsWithLabs, selectedPatients]);
 
-    const filterLabsByDateRange = (labs: Lab[]): Lab[] => {
+    const filterLabsByDateRange = (labs: PatientLab[]) => {
         switch (dateRange) {
             case "last":
-                return labs.slice(0, 1);
             case "last2":
-                return labs.slice(0, 2);
-            case "last3":
-                return labs.slice(0, 3);
-            case "last7days":
-                const sevenDaysAgo = new Date();
-                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-                return labs.filter((lab) => new Date(lab.collectedDate) >= sevenDaysAgo);
-            case "last14days":
-                const fourteenDaysAgo = new Date();
-                fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
-                return labs.filter((lab) => new Date(lab.collectedDate) >= fourteenDaysAgo);
+            case "last3": {
+                const n = parseInt(dateRange.replace("last", "")) || 1;
+                const latestLabsPerPatient = selectedPatients.reduce((filteredLabs, patientId) => {
+                    const patientLabs = labs.filter((lab) => lab.patientId === patientId);
+
+                    if (patientLabs.length <= n) return filteredLabs.concat(patientLabs);
+
+                    const sortedLabs = patientLabs.sort(
+                        (a, b) => new Date(b.collectedDate).getTime() - new Date(a.collectedDate).getTime()
+                    );
+                    const lastNLabs = sortedLabs.slice(0, n);
+
+                    return filteredLabs.concat(lastNLabs);
+                }, [] as PatientLab[]);
+
+                return latestLabsPerPatient;
+            }
+            case "last30days":
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                return labs.filter((lab) => new Date(lab.collectedDate) >= thirtyDaysAgo);
+            case "last60days":
+                const sixtyDaysAgo = new Date();
+                sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+                return labs.filter((lab) => new Date(lab.collectedDate) >= sixtyDaysAgo);
+            case "last90days":
+                const ninetyDaysAgo = new Date();
+                ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+                return labs.filter((lab) => new Date(lab.collectedDate) >= ninetyDaysAgo);
             default:
                 return labs;
         }
     };
 
-    const handleAnnotationChange = (labId: number, column: string, annotation: string) => {
-        setLabs((prevLabs) =>
-            prevLabs.map((lab) => {
-                if (lab.id === labId) {
-                    const updatedResults = (lab.results as LabResult[]).map((result) => {
-                        if (result.column === column) {
-                            return { ...result, annotations: annotation };
-                        }
-                        return result;
-                    });
-                    return { ...lab, results: updatedResults };
-                }
-                return lab;
-            })
-        );
-    };
+    const filteredLabs = useMemo(() => {
+        return filterLabsByDateRange(labs);
+    }, [labs, dateRange]);
 
-    const togglePinNote = (labId: number, column: string) => {
-        const key = `${labId}-${column}`;
-        setPinnedNotes((prev) => ({ ...prev, [key]: !prev[key] }));
-    };
+    if (error) return <div>Error loading labs: {error.message}</div>;
 
     return (
-        <div className="overflow-x-auto">
+        <div className="text-black overflow-auto">
             <div className="mb-4">
-                <select value={dateRange} onChange={(e) => setDateRange(e.target.value)} className="p-2 border rounded">
+                <select
+                    value={dateRange}
+                    onChange={(e) => setDateRange(e.target.value)}
+                    className="bg-purple-200 p-2 border rounded"
+                >
                     <option value="last">Last lab</option>
                     <option value="last2">Last 2 labs</option>
                     <option value="last3">Last 3 labs</option>
-                    <option value="last7days">Last 7 days</option>
-                    <option value="last14days">Last 14 days</option>
+                    <option value="last7days">Last 30 days</option>
+                    <option value="last14days">Last 60 days</option>
+                    <option value="last14days">Last 90 days</option>
                 </select>
             </div>
-            <table className="min-w-full bg-white border">
+            <table className="bg-purple-200 min-w-full bg-white border">
                 <thead>
                     <tr>
                         <th className="border p-2">Patient</th>
                         <th className="border p-2">Date</th>
-                        {labs[0] &&
-                            (labs[0].results as LabResult[]).map((result) => (
-                                <th key={result.column} className="border p-2">
+                        {filteredLabs[0] &&
+                            (filteredLabs[0].results as LabResult[]).map((result) => (
+                                <th key={result.column} className="border p-2 min-w-20">
                                     {result.column}
                                 </th>
                             ))}
                     </tr>
                 </thead>
                 <tbody>
-                    {labs.map((lab) => (
+                    {isLoading && (
+                        <tr>
+                            <td className="p-2">Loading...</td>
+                        </tr>
+                    )}
+                    {filteredLabs.map((lab) => (
                         <tr key={lab.id}>
-                            <td className="border p-2">{lab.userId}</td>
+                            <td className="border p-2">{lab.patientName}</td>
                             <td className="border p-2">{new Date(lab.collectedDate).toLocaleDateString()}</td>
                             {(lab.results as LabResult[]).map((result) => (
-                                <td key={result.column} className="border p-2 relative">
-                                    <div>{result.value}</div>
-                                    <div className="mt-2">
-                                        <textarea
-                                            value={result.annotations}
-                                            onChange={(e) =>
-                                                handleAnnotationChange(lab.id, result.column, e.target.value)
-                                            }
-                                            className="w-full p-1 border rounded"
-                                            rows={2}
-                                        />
-                                        <button
-                                            onClick={() => togglePinNote(lab.id, result.column)}
-                                            className="absolute top-2 right-2 text-blue-500"
-                                        >
-                                            📌
-                                        </button>
-                                    </div>
-                                    {pinnedNotes[`${lab.id}-${result.column}`] && (
-                                        <div className="absolute top-full left-0 bg-white border p-2 shadow-lg z-10">
-                                            {result.annotations}
-                                        </div>
+                                <td
+                                    key={result.column}
+                                    className="border p-2 text-center min-w-10"
+                                    data-hook="lab-result"
+                                >
+                                    {result.isVirtual ? (
+                                        <div className="text-gray-400 italic">No data</div>
+                                    ) : (
+                                        <div>{result.value}</div>
                                     )}
                                 </td>
                             ))}

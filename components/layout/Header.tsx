@@ -12,7 +12,7 @@ export default function Header() {
 
     return (
         <QueryClientProvider client={queryClient}>
-            <header className="bg-blue-600 text-white p-4">
+            <header className="header-height bg-purple-600 text-white p-1">
                 <nav className="container mx-auto flex justify-between items-center">
                     <h1 className="text-2xl font-bold">Nutritionist Lab Helper</h1>
                     <ul className="flex flex-row items-center space-x-4">

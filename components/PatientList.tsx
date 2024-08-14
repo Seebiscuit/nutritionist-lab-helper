@@ -1,6 +1,11 @@
 import React, { useState } from "react";
-import { useFetchPatients } from "@/services/http/usePatients";
-import { useGetPatientGroups, useCreatePatientGroup, useDeletePatientGroup, PatientGroup } from "@/services/http/useGroups";
+import { useFetchAllPatients } from "@/services/http/usePatients";
+import {
+    useGetPatientGroups,
+    useCreatePatientGroup,
+    useDeletePatientGroup,
+    PatientGroup,
+} from "@/services/http/useGroups";
 import { useSelectedPatients } from "../stores/selectedPatientsStore";
 
 interface PatientListProps {
@@ -12,7 +17,7 @@ const PatientList: React.FC<PatientListProps> = ({ onPatientSelect }) => {
     const [showGroupForm, setShowGroupForm] = useState(false);
     const { selectedPatients, togglePatient, clearSelection } = useSelectedPatients();
 
-    const { data: patients, isLoading: patientsLoading, error: patientsError } = useFetchPatients();
+    const { data: patients, isLoading: patientsLoading, error: patientsError } = useFetchAllPatients();
     const { data: groups, isLoading: groupsLoading, error: groupsError } = useGetPatientGroups();
     const createGroupMutation = useCreatePatientGroup();
     const deleteGroupMutation = useDeletePatientGroup();
@@ -39,11 +44,11 @@ const PatientList: React.FC<PatientListProps> = ({ onPatientSelect }) => {
     };
 
     return (
-        <div className="w-64 bg-gray-100 p-4 h-screen overflow-y-auto">
+        <div className="w-64 p-4 overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">Patients</h2>
             <div className="mb-4">
                 <button
-                    className="bg-blue-500 text-white px-4 py-2 rounded mr-2"
+                    className="bg-purple-500 text-white px-4 py-2 rounded mr-2"
                     onClick={() => setShowGroupForm(!showGroupForm)}
                 >
                     Create Group
@@ -82,22 +87,29 @@ const PatientList: React.FC<PatientListProps> = ({ onPatientSelect }) => {
             <div>
                 <h3 className="font-bold mb-2">
                     Patients
-                    {
-                        patients &&
+                    {patients && (
                         <span className="text-sm ml-2">
-                            ({patients.length}{selectedPatients && `/${selectedPatients.length} selected` })
-                        </span >
-                    }
+                            ({patients.length}
+                            {selectedPatients && `/${selectedPatients.length} selected`})
+                        </span>
+                    )}
                 </h3>
                 {patients?.map((patient) => (
                     <div key={patient.id} className="flex items-center mb-2">
                         <input
+                            id={`patient-${patient.id}`}
                             type="checkbox"
                             checked={selectedPatients.includes(patient.id)}
                             onChange={() => togglePatient(patient.id)}
                             className="mr-2"
                         />
-                        <span onClick={() => onPatientSelect(patient.id)}>{patient.name}</span>
+                        <label
+                            htmlFor={`patient-${patient.id}`}
+                            onClick={() => onPatientSelect(patient.id)}
+                            className="cursor-pointer"
+                        >
+                            {patient.name}
+                        </label>
                     </div>
                 ))}
             </div>

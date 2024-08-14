@@ -1,17 +1,35 @@
-import { PrismaClient, Patient } from '@prisma/client';
+import { PrismaClient, Patient, Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+type PatientWithLabs = Prisma.PatientGetPayload<{
+    include: { labs: true; };
+}>;
+
 export const patientRepository = {
-    async getAllPatients(): Promise<Patient[]> {
+    async getAllPatients(withLabs = false): Promise<Patient[] | PatientWithLabs[]> {
         return prisma.patient.findMany({
             orderBy: { name: 'asc' },
+            ...getLabsInclude(withLabs),
         });
     },
 
-    async getPatientById(id: number): Promise<Patient | null> {
+    async getPatientById(id: number, withLabs = false): Promise<Patient | PatientWithLabs | null> {
         return prisma.patient.findUnique({
             where: { id },
+            ...getLabsInclude(withLabs),
+        });
+    },
+
+    async getPatientsByIds(ids: number[], withLabs = false): Promise<Patient[] | PatientWithLabs[] | null> {
+        return prisma.patient.findMany({
+            where: {
+                id: {
+                    in: ids
+                }
+            },
+            ...getLabsInclude(withLabs),
+            orderBy: { name: 'asc' },
         });
     },
 
@@ -52,3 +70,8 @@ export const patientRepository = {
         return this.createPatient(name);
     },
 };
+
+function getLabsInclude(withLabs: boolean) {
+    return { include: { labs: withLabs } };
+
+}

@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback, ReactNode } fr
 
 interface SelectedPatientsContextType {
     selectedPatients: number[];
+    filterOnPatients: number[];
     addPatient: (patientId: number) => void;
     removePatient: (patientId: number) => void;
     togglePatient: (patientId: number) => void;
@@ -21,6 +22,7 @@ export const useSelectedPatients = () => {
 
 export const SelectedPatientsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [selectedPatients, setSelectedPatients] = useState<number[]>([]);
+    const [filterOnPatients, setFilterOnPatients] = useState<number[]>([]);
 
     const addPatient = useCallback((patientId: number) => {
         setSelectedPatients((prev) => [...new Set([...prev, patientId])]);
@@ -49,6 +51,7 @@ export const SelectedPatientsProvider: React.FC<{ children: ReactNode }> = ({ ch
 
     const value = {
         selectedPatients,
+        filterOnPatients,
         addPatient,
         removePatient,
         togglePatient,

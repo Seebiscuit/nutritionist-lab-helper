@@ -36,6 +36,19 @@ class ApiBuilder {
         return this;
     }
 
+    addQueryParams(params: Record<string, string | number | boolean | string[] | number[] | boolean[]>): ApiBuilder {
+        const url = new URL(this.url, window.location.origin);
+        Object.entries(params).forEach(([key, value]) => {
+            if (Array.isArray(value)) {
+                value.forEach(item => url.searchParams.append(key, item.toString()));
+            } else {
+                url.searchParams.append(key, value.toString());
+            }
+        });
+        this.url = url.toString();
+        return this;
+    }
+
     async send<T>(): Promise<T> {
         const response = await fetch(this.url, this.options);
         if (!response.ok) {

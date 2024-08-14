@@ -58,7 +58,7 @@ const SnippetsDictionary: React.FC = () => {
                     className="w-full p-2 mb-2 border rounded"
                     rows={3}
                 />
-                <button onClick={handleCreateSnippet} className="bg-blue-500 text-white px-4 py-2 rounded">
+                <button onClick={handleCreateSnippet} className="bg-purple-500 text-white px-4 py-2 rounded">
                     Create Snippet
                 </button>
             </div>

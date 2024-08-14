@@ -99,7 +99,7 @@ const NotesTokenizer: React.FC<NotesTokenizerProps> = ({ value, onChange, textar
                     {snippetResults.map((result, index) => (
                         <div
                             key={index}
-                            className={`p-2 cursor-pointer ${index === selectedIndex ? "bg-blue-100" : ""}`}
+                            className={`p-2 cursor-pointer ${index === selectedIndex ? "bg-purple-100" : ""}`}
                             onClick={() => insertSnippet(result)}
                         >
                             {result}
