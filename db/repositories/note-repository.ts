@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 export const noteRepository = {
     async getNotesForPatient(patientId: number): Promise<Note[]> {
         return prisma.note.findMany({
-            where: { userId: patientId },
+            where: { patientId: patientId },
             orderBy: { date: 'desc' },
         });
     },
@@ -13,7 +13,7 @@ export const noteRepository = {
     async createNote(patientId: number, content: string): Promise<Note> {
         return prisma.note.create({
             data: {
-                userId: patientId,
+                patientId: patientId,
                 date: new Date(),
                 content,
             },

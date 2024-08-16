@@ -9,10 +9,9 @@ import {
 import { useSelectedPatients } from "../stores/selectedPatientsStore";
 
 interface PatientListProps {
-    onPatientSelect: (patientId: number | null) => void;
 }
 
-const PatientList: React.FC<PatientListProps> = ({ onPatientSelect }) => {
+const PatientList: React.FC<PatientListProps> = () => {
     const [newGroupName, setNewGroupName] = useState("");
     const [showGroupForm, setShowGroupForm] = useState(false);
     const { selectedPatients, togglePatient, clearSelection } = useSelectedPatients();
@@ -105,7 +104,6 @@ const PatientList: React.FC<PatientListProps> = ({ onPatientSelect }) => {
                         />
                         <label
                             htmlFor={`patient-${patient.id}`}
-                            onClick={() => onPatientSelect(patient.id)}
                             className="cursor-pointer"
                         >
                             {patient.name}

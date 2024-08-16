@@ -1,77 +1,154 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Note } from "@prisma/client";
-import { noteRepository } from "../db/repositories/note-repository";
-import { UndoService } from "../services/undoService";
+import { useNotes } from "@/services/http/useNotes";
 import NotesTokenizer from "./NotesTokenizer";
+import { UndoService } from "@/services/undoService";
 
 interface NotesComponentProps {
     patientId: number;
 }
 
+interface EditingNote {
+    id: number;
+    content: string;
+}
+
+const AUTO_SAVE_INTERVAL = 3000;
+
 const NotesComponent: React.FC<NotesComponentProps> = ({ patientId }) => {
-    const [notes, setNotes] = useState<Note[]>([]);
-    const [currentNote, setCurrentNote] = useState("");
-    const [isExpanded, setIsExpanded] = useState(false);
+    const { notes, isLoading, createNote, updateNote } = useNotes(patientId);
+    const [editingNote, setEditingNote] = useState<EditingNote | null>(null);
+    const [newNoteContent, setNewNoteContent] = useState("");
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const undoServiceRef = useRef<UndoService>(new UndoService(patientId));
+    //const undoServiceRef = useRef<UndoService>(new UndoService(patientId));
+    const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
-        fetchNotes();
-    }, [patientId]);
+        return () => {
+            if (autoSaveTimerRef.current) {
+                clearTimeout(autoSaveTimerRef.current);
+            }
+        };
+    }, []);
 
-    const fetchNotes = async () => {
-        const fetchedNotes = await noteRepository.getNotesForPatient(patientId);
-        setNotes(fetchedNotes);
-        setCurrentNote(fetchedNotes.map((note) => note.content).join("\n\n") + "\n\n");
+    const handleNoteChange = (content: string, noteId: number | null = null) => {
+        if (noteId === null) {
+            setNewNoteContent(content);
+        } else {
+            setEditingNote((prev) => (prev && prev.id === noteId ? { ...prev, content } : prev));
+        }
+        //undoServiceRef.current.pushState(content);
+
+        if (autoSaveTimerRef.current) {
+            clearTimeout(autoSaveTimerRef.current);
+        }
+
+        autoSaveTimerRef.current = setTimeout(() => {
+            handleSaveNote(noteId);
+        }, AUTO_SAVE_INTERVAL); // Auto-save after 30 seconds
     };
 
-    const handleNoteChange = (content: string) => {
-        setCurrentNote(content);
-        undoServiceRef.current.pushState(content);
+    const handleEditNote = (note: EditingNote) => {
+        setEditingNote(note);
+        //undoServiceRef.current = new UndoService(patientId);
+        //undoServiceRef.current.pushState(note.content);
     };
 
-    const handleUndo = () => {
+    const handleSaveNote = async (noteId: number | null = null) => {
+        if (noteId === null) {
+            if (newNoteContent.trim()) {
+                await createNote(newNoteContent);
+                setNewNoteContent("");
+            }
+        } else if (editingNote && editingNote.id === noteId) {
+            await updateNote({ id: editingNote.id, content: editingNote.content });
+
+            setEditingNote(null);
+        }
+    };
+
+    /* const handleUndo = () => {
         const previousState = undoServiceRef.current.undo();
         if (previousState !== null) {
-            setCurrentNote(previousState);
+            if (editingNote) {
+                setEditingNote({ ...editingNote, content: previousState });
+            } else {
+                setNewNoteContent(previousState);
+            }
         }
-    };
-
-    const handleRedo = () => {
+    } */ /*     const handleRedo = () => {
         const nextState = undoServiceRef.current.redo();
         if (nextState !== null) {
-            setCurrentNote(nextState);
+            if (editingNote) {
+                setEditingNote({ ...editingNote, content: nextState });
+            } else {
+                setNewNoteContent(nextState);
+            }
         }
-    };
+    }; */
 
-    const handleSaveNote = async () => {
-        await noteRepository.createNote(patientId, currentNote);
-        fetchNotes();
-    };
+    if (isLoading) {
+        return <div>Loading notes...</div>;
+    }
+
+    const sortedNotes = [...notes].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     return (
-        <div className={`bg-white border rounded p-4 ${isExpanded ? "h-screen" : "h-64"}`}>
+        <div className={`bg-gray-50 border rounded p-4`}>
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold">Patient Notes</h2>
                 <div>
-                    <button onClick={handleUndo} className="mr-2 p-1 bg-gray-200 rounded">
+                    {/* <button onClick={handleUndo} className="mr-2 p-1 bg-gray-200 rounded">
                         Undo
                     </button>
                     <button onClick={handleRedo} className="mr-2 p-1 bg-gray-200 rounded">
                         Redo
-                    </button>
-                    <button onClick={() => setIsExpanded(!isExpanded)} className="p-1 bg-purple-500 text-white rounded">
-                        {isExpanded ? "Collapse" : "Expand"}
-                    </button>
+                    </button> */}
                 </div>
             </div>
-            <div className={`overflow-y-auto ${isExpanded ? "h-[calc(100%-8rem)]" : "h-40"}`}>
-                <NotesTokenizer value={currentNote} onChange={handleNoteChange} textareaRef={textareaRef} />
+            <div>
+                {sortedNotes.map((note) => (
+                    <div key={note.id} className="mb-4 text-black ">
+                        <div className="text-sm mb-2">{new Date(note.date).toLocaleString()}</div>
+                        <textarea
+                            value={editingNote && editingNote.id === note.id ? editingNote.content : note.content}
+                            onChange={(e) => handleNoteChange(e.target.value, note.id)}
+                            onClick={() => !editingNote && handleEditNote({ id: note.id, content: note.content })}
+                            className="w-full p-0 border-none resize-none bg-transparent focus:outline-none"
+                            style={{
+                                minHeight: "1.5em",
+                                height: "auto",
+                                overflow: "hidden",
+                            }}
+                            onInput={(e) => {
+                                e.currentTarget.style.height = "auto";
+                                e.currentTarget.style.height = e.currentTarget.scrollHeight + "px";
+                            }}
+                        />
+                        <NotesTokenizer
+                            onChange={(content) => handleNoteChange(content, note.id)}
+                            textareaRef={textareaRef}
+                        />
+                        <span>---</span>
+                    </div>
+                ))}
             </div>
             <div className="mt-4">
-                <button onClick={handleSaveNote} className="p-2 bg-green-500 text-white rounded">
-                    Save Note
-                </button>
+                <textarea
+                    value={newNoteContent}
+                    onChange={(e) => handleNoteChange(e.target.value)}
+                    className="w-full p-0 border-none resize-none bg-transparent focus:outline-none"
+                    style={{
+                        minHeight: "1.5em",
+                        height: "auto",
+                        overflow: "hidden",
+                    }}
+                    onInput={(e) => {
+                        e.currentTarget.style.height = "auto";
+                        e.currentTarget.style.height = e.currentTarget.scrollHeight + "px";
+                    }}
+                    placeholder="Start typing your note here..."
+                />
+                <NotesTokenizer onChange={(content) => handleNoteChange(content)} textareaRef={textareaRef} />
             </div>
         </div>
     );

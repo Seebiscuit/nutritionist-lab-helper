@@ -14,7 +14,11 @@ interface LabResult extends JsonObject {
     isVirtual?: boolean;
 }
 
-const LabTable: React.FC = () => {
+interface LabTableProps {
+    onClickPatient: (patientId: number) => void;
+}
+
+const LabTable: React.FC<LabTableProps> = ({ onClickPatient }) => {
     const { selectedPatients } = useSelectedPatients();
     const { data: patientsWithLabs, isLoading, error } = useFetchPatientsWithLabs(selectedPatients);
     const [dateRange, setDateRange] = useState<string>("last");
@@ -123,7 +127,9 @@ const LabTable: React.FC = () => {
                     )}
                     {filteredLabs.map((lab) => (
                         <tr key={lab.id}>
-                            <td className="border p-2">{lab.patientName}</td>
+                            <td className="border p-2 hover:underline cursor-pointer"
+                                onClick={() => onClickPatient(lab.patientId)}
+                            >{lab.patientName}</td>
                             <td className="border p-2">{new Date(lab.collectedDate).toLocaleDateString()}</td>
                             {(lab.results as LabResult[]).map((result) => (
                                 <td
