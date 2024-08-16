@@ -5,35 +5,31 @@ import LabTable from "../components/LabTable";
 import NotesComponent from "../components/NotesComponent";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SelectedPatientsProvider } from "@/stores/selectedPatientsStore";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 const queryClient = new QueryClient();
 
 const LabsPage: React.FC = () => {
     const [selectedPatientId, setSelectedPatientId] = useState<number | null>(null);
-    const [showNotes, setShowNotes] = useState(false);
 
     return (
         <QueryClientProvider client={queryClient}>
             <SelectedPatientsProvider>
                 <div className="flex">
-                    <div className="content-height sidebar-width h-screen overflow-y-auto">
-                        <PatientList onPatientSelect={setSelectedPatientId} />
+                    <div className="content-height sidebar-width h-screen overflow-x-hidden overflow-y-auto">
+                        <PatientList />
                     </div>
-                    <div className="content-height content-width flex-grow py-4 pl-3 w-6/7 h-screen overflow-auto">
-                        <div className="mb-4">
-                            <button
-                                onClick={() => setShowNotes(!showNotes)}
-                                className="bg-purple-500 text-white px-4 py-2 rounded"
+                    <div className="content-height content-width flex-grow py-4 pl-3">
+                        <div className="flex flex-col">
+                            <div
+                                className={`${
+                                    selectedPatientId ? "content-max-height-half" : "content-height"
+                                }  overflow-auto`}
                             >
-                                {showNotes ? "Hide Notes" : "Show Notes"}
-                            </button>
-                        </div>
-                        <div className="flex">
-                            <div className={`flex-grow ${showNotes ? "h-1/2" : "h-full"}`}>
-                                <LabTable />
+                                <LabTable onClickPatient={(patientId: number) => setSelectedPatientId(patientId)} />
                             </div>
-                            {showNotes && selectedPatientId && (
-                                <div className="h-1/2 ml-4">
+                            {selectedPatientId && (
+                                <div className="content-height-half mt-4 pr-3 mb-3 overflow-auto">
                                     <NotesComponent patientId={selectedPatientId} />
                                 </div>
                             )}
@@ -41,6 +37,7 @@ const LabsPage: React.FC = () => {
                     </div>
                 </div>
             </SelectedPatientsProvider>
+            <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
     );
 };

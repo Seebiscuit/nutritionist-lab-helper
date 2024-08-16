@@ -24,7 +24,6 @@
     }
 }
 
-
 .header-height {
     height: var(--header-height);
 }
@@ -39,6 +38,16 @@
 
 .content-height {
     height: var(--content-height);
+}
+
+.content-height-half {
+    --content-height-half: calc(var(--content-height) / 2);
+    height: var(--content-height-half);
+}
+
+.content-max-height-half {
+    --content-height-half: calc(var(--content-height) / 2  - var(--footer-height) - 0.5rem);
+    max-height: var(--content-height-half);
 }
 
 .content-width {
