@@ -12,7 +12,7 @@ interface EditingNote {
     content: string;
 }
 
-const AUTO_SAVE_INTERVAL = 3000;
+const AUTO_SAVE_INTERVAL = 30000;
 
 const NotesComponent: React.FC<NotesComponentProps> = ({ patientId }) => {
     const { notes, isLoading, createNote, updateNote } = useNotes(patientId);
@@ -34,7 +34,13 @@ const NotesComponent: React.FC<NotesComponentProps> = ({ patientId }) => {
         if (noteId === null) {
             setNewNoteContent(content);
         } else {
-            setEditingNote((prev) => (prev && prev.id === noteId ? { ...prev, content } : prev));
+            setEditingNote((prev) => {
+                if (prev && prev.id === noteId) {
+                    return { ...prev, content };
+                }
+
+                return prev;
+            });
         }
         //undoServiceRef.current.pushState(content);
 
@@ -43,7 +49,7 @@ const NotesComponent: React.FC<NotesComponentProps> = ({ patientId }) => {
         }
 
         autoSaveTimerRef.current = setTimeout(() => {
-            handleSaveNote(noteId);
+            handleSaveNote(noteId, content);
         }, AUTO_SAVE_INTERVAL); // Auto-save after 30 seconds
     };
 
@@ -53,14 +59,14 @@ const NotesComponent: React.FC<NotesComponentProps> = ({ patientId }) => {
         //undoServiceRef.current.pushState(note.content);
     };
 
-    const handleSaveNote = async (noteId: number | null = null) => {
+    const handleSaveNote = async (noteId: number | null = null, content: string) => {
         if (noteId === null) {
             if (newNoteContent.trim()) {
                 await createNote(newNoteContent);
                 setNewNoteContent("");
             }
-        } else if (editingNote && editingNote.id === noteId) {
-            await updateNote({ id: editingNote.id, content: editingNote.content });
+        } else{
+            await updateNote({ id: noteId, content });
 
             setEditingNote(null);
         }
@@ -123,6 +129,7 @@ const NotesComponent: React.FC<NotesComponentProps> = ({ patientId }) => {
                                 e.currentTarget.style.height = "auto";
                                 e.currentTarget.style.height = e.currentTarget.scrollHeight + "px";
                             }}
+                            ref={textareaRef}
                         />
                         <NotesTokenizer
                             onChange={(content) => handleNoteChange(content, note.id)}

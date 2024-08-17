@@ -1,41 +1,44 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { snippetRepository } from "@/db/repositories/snippet-repository";
-import { cursorPositioningService } from "@/services/cursorPositioningService";
+import React, { useState, useEffect } from "react";
+import { useSnippets } from "../services/http/useSnippets";
+import { cursorPositioningService } from "../services/cursorPositioningService";
 
 interface NotesTokenizerProps {
     onChange: (value: string) => void;
     textareaRef: React.RefObject<HTMLTextAreaElement>;
 }
 
-const NotesTokenizer: React.FC<NotesTokenizerProps> = ({ textareaRef, onChange }) => {
+const NotesTokenizer: React.FC<NotesTokenizerProps> = ({ onChange, textareaRef }) => {
     const [snippetQuery, setSnippetQuery] = useState("");
-    const [snippetResults, setSnippetResults] = useState<string[]>([]);
     const [cursorPosition, setCursorPosition] = useState({ top: 0, left: 0 });
     const [showResults, setShowResults] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(0);
+    const { searchSnippets } = useSnippets();
+    const { data: snippetResults = [], isLoading } = searchSnippets(snippetQuery);
 
-    const searchSnippets = useCallback(async (query: string) => {
-        const results =  query ? await snippetRepository.searchSnippets(query) : [];
-
-        if (results?.length) {
-            setSnippetResults(results.map((snippet) => snippet.content));
+    useEffect(() => {
+        if (snippetQuery) {
             setShowResults(true);
             setSelectedIndex(0);
         } else {
-            setSnippetResults([]);
             setShowResults(false);
         }
-    }, []);
-
-    useEffect(() => {
-        searchSnippets(snippetQuery);
-    }, [snippetQuery, searchSnippets]);
+    }, [snippetQuery]);
 
     useEffect(() => {
         const textarea = textareaRef.current;
-        if (!textarea) return;
+        if (textarea) {
+            textarea.addEventListener("input", handleInputChange);
+            textarea.addEventListener("keydown", handleKeyDown);
+            return () => {
+                textarea.removeEventListener("input", handleInputChange);
+                textarea.removeEventListener("keydown", handleKeyDown);
+            };
+        }
+    }, [textareaRef, snippetResults]);
 
-        const handleInput = () => {
+    const handleInputChange = () => {
+        const textarea = textareaRef.current;
+        if (textarea) {
             const cursorIndex = textarea.selectionStart;
             const textBeforeCursor = textarea.value.slice(0, cursorIndex);
             const match = textBeforeCursor.match(/\{\{(\w*)$/);
@@ -47,65 +50,46 @@ const NotesTokenizer: React.FC<NotesTokenizerProps> = ({ textareaRef, onChange }
             } else {
                 setSnippetQuery("");
             }
+        }
+    };
 
-            onChange(textarea.value);
-        };
-
-        textarea.addEventListener("input", handleInput);
-        return () => textarea.removeEventListener("input", handleInput);
-    }, [textareaRef, onChange]);
-
-    const insertSnippet = useCallback(
-        (snippet: string) => {
-            const textarea = textareaRef.current;
-            if (textarea) {
-                const start = textarea.selectionStart;
-                const end = textarea.selectionEnd;
-                const textBeforeCursor = textarea.value.slice(0, start);
-                const textAfterCursor = textarea.value.slice(end);
-                const lastDoubleBraceIndex = textBeforeCursor.lastIndexOf("{{");
-                const newValue = textBeforeCursor.slice(0, lastDoubleBraceIndex) + snippet + textAfterCursor;
-                onChange(newValue);
-                const newCursorPosition = lastDoubleBraceIndex + snippet.length;
-                textarea.setSelectionRange(newCursorPosition, newCursorPosition);
-                textarea.focus();
-            }
-            setShowResults(false);
-        },
-        [textareaRef, onChange]
-    );
-
-    const handleKeyDown = useCallback(
-        (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-            if (showResults) {
-                if (e.key === "ArrowDown") {
-                    e.preventDefault();
-                    setSelectedIndex((prevIndex) => (prevIndex + 1) % snippetResults.length);
-                } else if (e.key === "ArrowUp") {
-                    e.preventDefault();
-                    setSelectedIndex((prevIndex) => (prevIndex - 1 + snippetResults.length) % snippetResults.length);
-                } else if (e.key === "Enter") {
-                    e.preventDefault();
-                    insertSnippet(snippetResults[selectedIndex]);
-                } else if (e.key === "Escape") {
-                    setShowResults(false);
-                }
-            }
-        },
-        [showResults, snippetResults, selectedIndex, insertSnippet]
-    );
-
-    useEffect(() => {
+    const insertSnippet = (snippet: string) => {
         const textarea = textareaRef.current;
         if (textarea) {
-            textarea.addEventListener("keydown", handleKeyDown as any);
-            return () => textarea.removeEventListener("keydown", handleKeyDown as any);
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const textBeforeCursor = textarea.value.slice(0, start);
+            const textAfterCursor = textarea.value.slice(end);
+            const lastDoubleBraceIndex = textBeforeCursor.lastIndexOf("{{");
+            const newValue = textBeforeCursor.slice(0, lastDoubleBraceIndex) + snippet + textAfterCursor;
+            onChange(newValue);
+            const newCursorPosition = lastDoubleBraceIndex + snippet.length;
+            textarea.setSelectionRange(newCursorPosition, newCursorPosition);
+            textarea.focus();
         }
-    }, [textareaRef, handleKeyDown]);
+        setShowResults(false);
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+        if (showResults) {
+            if (e.key === "ArrowDown") {
+                e.preventDefault();
+                setSelectedIndex((prevIndex) => (prevIndex + 1) % snippetResults.length);
+            } else if (e.key === "ArrowUp") {
+                e.preventDefault();
+                setSelectedIndex((prevIndex) => (prevIndex - 1 + snippetResults.length) % snippetResults.length);
+            } else if (e.key === "Enter") {
+                e.preventDefault();
+                insertSnippet(snippetResults[selectedIndex].content);
+            } else if (e.key === "Escape") {
+                setShowResults(false);
+            }
+        }
+    };
 
     return (
-        <div className="relative">
-            {showResults && (
+        <>
+            {showResults && !isLoading && (
                 <div
                     className="absolute bg-white border rounded shadow-lg z-10"
                     style={{ top: cursorPosition.top, left: cursorPosition.left }}
@@ -114,14 +98,14 @@ const NotesTokenizer: React.FC<NotesTokenizerProps> = ({ textareaRef, onChange }
                         <div
                             key={index}
                             className={`p-2 cursor-pointer ${index === selectedIndex ? "bg-blue-100" : ""}`}
-                            onClick={() => insertSnippet(result)}
+                            onClick={() => insertSnippet(result.content)}
                         >
-                            {result}
+                            {result.key}: {result.content}
                         </div>
                     ))}
                 </div>
             )}
-        </div>
+        </>
     );
 };
 
