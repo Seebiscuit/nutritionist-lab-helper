@@ -14,4 +14,7 @@ export const PATIENTS_WITH_LABS_QUERY_KEY = 'patients-with-labs';
 export const NOTES_ROUTE = 'notes';
 export const NOTES_QUERY_KEY = 'notes';
 
+export const SNIPPETS_ROUTE = 'snippets';
+export const SNIPPETS_QUERY_KEY = 'snippets';
+
 export const BEGINNING_OF_EPOCH_TIME = 0;
