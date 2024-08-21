@@ -91,16 +91,16 @@ const NotesTokenizer: React.FC<NotesTokenizerProps> = ({ onChange, textareaRef }
         <>
             {showResults && !isLoading && (
                 <div
-                    className="absolute bg-white border rounded shadow-lg z-10"
+                    className="absolute bg-white border rounded shadow-lg z-10 text-black"
                     style={{ top: cursorPosition.top, left: cursorPosition.left }}
                 >
                     {snippetResults.map((result, index) => (
                         <div
                             key={index}
-                            className={`p-2 cursor-pointer ${index === selectedIndex ? "bg-blue-100" : ""}`}
+                            className={`p-2 cursor-pointer border-b-2 border-gray-300 hover:bg-white ${index === selectedIndex ? "bg-blue-50" : "bg-gray-100"}`}
                             onClick={() => insertSnippet(result.content)}
                         >
-                            {result.key}: {result.content}
+                            <span className="font-semibold">{result.key}</span>: {result.content}
                         </div>
                     ))}
                 </div>
