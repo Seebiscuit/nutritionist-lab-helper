@@ -28,8 +28,12 @@ const NotesComponent: React.FC<NotesComponentProps> = ({ patientId }) => {
 
      useEffect(() => {
          return () => {
-             if (autoSaveTimerRef.current) {
+             if (autoSaveTimerRef.current) { 
                  clearTimeout(autoSaveTimerRef.current);
+
+                 if (editingNote) {
+                     handleSaveNote(editingNote.id, editingNote.content);
+                 }
              }
          };
      }, []);
@@ -74,7 +78,14 @@ const NotesComponent: React.FC<NotesComponentProps> = ({ patientId }) => {
 
              setEditingNote(null);
          }
-     };
+    };
+    
+    const onClickNote = (note: EditingNote) => {
+        if (editingNote && editingNote.id !== note.id) {
+            handleSaveNote(editingNote.id, editingNote.content);
+        }
+        handleEditNote(note);
+    }
 
      /* const handleUndo = () => {
         const previousState = undoServiceRef.current.undo();
@@ -121,8 +132,8 @@ const NotesComponent: React.FC<NotesComponentProps> = ({ patientId }) => {
                          <div className="text-sm mb-2">{new Date(note.date).toLocaleString()}</div>
                          <textarea
                              value={editingNote && editingNote.id === note.id ? editingNote.content : note.content}
+                             onClick={() => onClickNote(note)}
                              onChange={(e) => handleNoteChange(e.target.value, note.id)}
-                             onClick={() => !editingNote && handleEditNote({ id: note.id, content: note.content })}
                              className="w-full p-0 border-none resize-none bg-transparent focus:outline-none"
                              style={{
                                  minHeight: "1.5em",
