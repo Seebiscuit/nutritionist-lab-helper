@@ -4,10 +4,10 @@ import { cursorPositioningService } from "../services/cursorPositioningService";
 
 interface NotesTokenizerProps {
     onChange: (value: string) => void;
-    textareaRef: React.RefObject<HTMLTextAreaElement>;
+    textarea: HTMLTextAreaElement | null;
 }
 
-const NotesTokenizer: React.FC<NotesTokenizerProps> = ({ onChange, textareaRef }) => {
+const NotesTokenizer: React.FC<NotesTokenizerProps> = ({ onChange, textarea }) => {
     const [snippetQuery, setSnippetQuery] = useState("");
     const [cursorPosition, setCursorPosition] = useState({ top: 0, left: 0 });
     const [showResults, setShowResults] = useState(false);
@@ -25,7 +25,6 @@ const NotesTokenizer: React.FC<NotesTokenizerProps> = ({ onChange, textareaRef }
     }, [snippetQuery]);
 
     useEffect(() => {
-        const textarea = textareaRef.current;
         if (textarea) {
             textarea.addEventListener("input", handleInputChange);
             textarea.addEventListener("keydown", handleKeyDown);
@@ -34,10 +33,9 @@ const NotesTokenizer: React.FC<NotesTokenizerProps> = ({ onChange, textareaRef }
                 textarea.removeEventListener("keydown", handleKeyDown);
             };
         }
-    }, [textareaRef, snippetResults]);
+    }, [textarea, snippetResults]);
 
     const handleInputChange = () => {
-        const textarea = textareaRef.current;
         if (textarea) {
             const cursorIndex = textarea.selectionStart;
             const textBeforeCursor = textarea.value.slice(0, cursorIndex);
@@ -54,7 +52,6 @@ const NotesTokenizer: React.FC<NotesTokenizerProps> = ({ onChange, textareaRef }
     };
 
     const insertSnippet = (snippet: string) => {
-        const textarea = textareaRef.current;
         if (textarea) {
             const start = textarea.selectionStart;
             const end = textarea.selectionEnd;
