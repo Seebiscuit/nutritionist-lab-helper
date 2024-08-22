@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSnippets } from "../services/http/useSnippets";
 import { cursorPositioningService } from "../services/cursorPositioningService";
 
@@ -11,9 +11,17 @@ const NotesTokenizer: React.FC<NotesTokenizerProps> = ({ onChange, textarea }) =
     const [snippetQuery, setSnippetQuery] = useState("");
     const [cursorPosition, setCursorPosition] = useState({ top: 0, left: 0 });
     const [showResults, setShowResults] = useState(false);
-    const [selectedIndex, setSelectedIndex] = useState(0);
+    
     const { searchSnippets } = useSnippets();
     const { data: snippetResults = [], isLoading } = searchSnippets(snippetQuery);
+
+    
+    const [selectedIndex, setSelectedIndex] = useState(0);
+    const selectedIndexRef = useRef(selectedIndex);
+    
+    useEffect(() => {
+        selectedIndexRef.current = selectedIndex;
+    }, [selectedIndex]);
 
     useEffect(() => {
         if (snippetQuery) {
@@ -67,22 +75,27 @@ const NotesTokenizer: React.FC<NotesTokenizerProps> = ({ onChange, textarea }) =
         setShowResults(false);
     };
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-        if (showResults) {
-            if (e.key === "ArrowDown") {
-                e.preventDefault();
-                setSelectedIndex((prevIndex) => (prevIndex + 1) % snippetResults.length);
-            } else if (e.key === "ArrowUp") {
-                e.preventDefault();
-                setSelectedIndex((prevIndex) => (prevIndex - 1 + snippetResults.length) % snippetResults.length);
-            } else if (e.key === "Enter") {
-                e.preventDefault();
-                insertSnippet(snippetResults[selectedIndex].content);
-            } else if (e.key === "Escape") {
-                setShowResults(false);
-            }
-        }
-    };
+     const handleKeyDown = (e: KeyboardEvent) => {
+         if (showResults) {
+             if (e.key === "ArrowDown") {
+                 e.preventDefault();
+
+                 setSelectedIndex((prevIndex) =>
+                     prevIndex <= snippetResults.length - 1 ? prevIndex + 1 : snippetResults.length - 1
+                 );
+             } else if (e.key === "ArrowUp") {
+                 e.preventDefault();
+
+                 setSelectedIndex((prevIndex) => (prevIndex <= 0 ? 0 : prevIndex - 1));
+             } else if (e.key === "Enter") {
+                 e.preventDefault();
+
+                 insertSnippet(snippetResults[selectedIndexRef.current].content);
+             } else if (e.key === "Escape") {
+                 setShowResults(false);
+             }
+         }
+     };
 
     return (
         <>
@@ -94,7 +107,9 @@ const NotesTokenizer: React.FC<NotesTokenizerProps> = ({ onChange, textarea }) =
                     {snippetResults.map((result, index) => (
                         <div
                             key={index}
-                            className={`p-2 cursor-pointer border-b-2 border-gray-300 hover:bg-white ${index === selectedIndex ? "bg-blue-50" : "bg-gray-100"}`}
+                            className={`p-2 cursor-pointer border-b-2 border-gray-300 hover:bg-purple-300 ${
+                                index === selectedIndex ? "bg-purple-300" : "bg-gray-100"
+                            }`}
                             onClick={() => insertSnippet(result.content)}
                         >
                             <span className="font-semibold">{result.key}</span>: {result.content}

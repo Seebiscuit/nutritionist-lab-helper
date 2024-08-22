@@ -71,7 +71,7 @@ function calculateFinalPosition(textareaElement: HTMLTextAreaElement | HTMLInput
     const adjustedLeft = textareaRect.left + cursorLeft - textareaElement.scrollLeft;
     const adjustedTop = textareaRect.top + cursorTop - textareaElement.scrollTop;
 
-    logPositionDetails(textareaElement, cursorLeft, cursorTop, textareaRect, adjustedLeft, adjustedTop);
+    //logPositionDetails(textareaElement, cursorLeft, cursorTop, textareaRect, adjustedLeft, adjustedTop);
 
     return { left: adjustedLeft, top: adjustedTop };
 }
