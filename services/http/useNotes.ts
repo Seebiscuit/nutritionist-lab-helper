@@ -82,7 +82,7 @@ export const useNotes = (patientId: number) => {
         isLoading: notesQuery.isLoading,
         isError: notesQuery.isError,
         error: notesQuery.error,
-        createNote: createNoteMutation.mutate,
-        updateNote: updateNoteMutation.mutate,
+        createNote: createNoteMutation.mutateAsync,
+        updateNote: updateNoteMutation.mutateAsync,
     };
 };

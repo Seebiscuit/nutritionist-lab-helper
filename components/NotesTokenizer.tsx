@@ -3,7 +3,7 @@ import { useSnippets } from "../services/http/useSnippets";
 import { cursorPositioningService } from "../services/cursorPositioningService";
 
 interface NotesTokenizerProps {
-    onChange: (value: string) => void;
+    onChange: (cursorPosition: number, value: string) => void;
     textarea: HTMLTextAreaElement | null;
 }
 
@@ -67,10 +67,8 @@ const NotesTokenizer: React.FC<NotesTokenizerProps> = ({ onChange, textarea }) =
             const textAfterCursor = textarea.value.slice(end);
             const lastDoubleBraceIndex = textBeforeCursor.lastIndexOf("{{");
             const newValue = textBeforeCursor.slice(0, lastDoubleBraceIndex) + snippet + textAfterCursor;
-            onChange(newValue);
             const newCursorPosition = lastDoubleBraceIndex + snippet.length;
-            textarea.setSelectionRange(newCursorPosition, newCursorPosition);
-            textarea.focus();
+            onChange(newCursorPosition, newValue);
         }
         setShowResults(false);
     };
