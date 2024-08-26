@@ -18,110 +18,108 @@ interface EditingNote {
 const AUTO_SAVE_INTERVAL = 30000;
 
 const NotesComponent: React.FC<NotesComponentProps> = ({ patientId }) => {
-        const { notes, isLoading, createNote, updateNote, deleteNote } = useNotes(patientId);
-        const [editingNote, setEditingNote] = useState<EditingNote | null>(null);
+    const { notes, isLoading, createNote, updateNote, deleteNote } = useNotes(patientId);
+    const [editingNote, setEditingNote] = useState<EditingNote | null>(null);
 
-        const [newNoteContent, setNewNoteContent] = useState("");
+    const [newNoteContent, setNewNoteContent] = useState("");
 
-        const notesLengthPlusNew = notes.length + 1;
-        const [textareaEls, setTextareaEl] = useElementArrayRefs<HTMLTextAreaElement>(notesLengthPlusNew);
+    const notesLengthPlusNew = notes.length + 1;
+    const [textareaEls, setTextareaEl] = useElementArrayRefs<HTMLTextAreaElement>(notesLengthPlusNew);
 
-        //const undoServiceRef = useRef<UndoService>(new UndoService(patientId));
-        const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+    //const undoServiceRef = useRef<UndoService>(new UndoService(patientId));
+    const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-        useEffect(() => {
-            if (editingNote) {
-                console.log("last note id", notes[0].id);
-                console.log("editing note id", editingNote.id);
-
-                const textareaEl = getTextArea(editingNote.id);
-                if (textareaEl) {
-                    console.log("textareaEl", textareaEl);
-
-                    console.log("focus on id", editingNote.id);
-
-                    textareaEl.focus();
-                    textareaEl.selectionStart = editingNote.lastSelectionStart ?? 0;
-                    textareaEl.scrollIntoView();
-                }
+    // This hook will focus the newly created note textarea
+    useEffect(() => {
+        if (isLastNote(editingNote?.id)) {
+            const textareaEl = getTextArea(editingNote!.id);
+            if (textareaEl) {
+                textareaEl.focus();
+                textareaEl.selectionStart = editingNote!.lastSelectionStart ?? 0;
+                textareaEl.scrollIntoView();
             }
-        }, [notes, editingNote]);
+        }
+    }, [notes, editingNote]);
 
-        useMount(() => {
-            return () => {
-                if (autoSaveTimerRef.current) {
-                    clearTimeout(autoSaveTimerRef.current);
-
-                    if (editingNote) {
-                        handleSaveNote(editingNote.id, editingNote.content);
-                    }
-                }
-            };
-        });
-
-        const handleNoteChange = async (cursorPosition: number, content: string, noteId: number | null = null) => {
-            if (noteId === null) {
-                if (editingNote) {
-                    await handleSaveNote(editingNote.id, editingNote.content);
-                }
-                setNewNoteContent(content);
-                noteId = await handleSaveNote(null, content);
-            }
-
-            setEditingNote({ id: noteId, content, lastSelectionStart: cursorPosition });
-            //undoServiceRef.current.pushState(content);
-
+    useMount(() => {
+        return () => {
             if (autoSaveTimerRef.current) {
                 clearTimeout(autoSaveTimerRef.current);
-            }
 
-            autoSaveTimerRef.current = setTimeout(() => {
-                handleSaveNote(noteId, content);
-            }, AUTO_SAVE_INTERVAL); // Auto-save after 30 seconds
-        };
-
-        const debouncedHandleNoteChange = useCallback(debounce(handleNoteChange, 1000), [editingNote]);
-
-        const handleEditNote = (note: EditingNote) => {
-            setEditingNote(note);
-            //undoServiceRef.current = new UndoService(patientId);
-            //undoServiceRef.current.pushState(note.content);
-        };
-
-        const handleSaveNote = async (noteId: number | null = null, content: string): Promise<number> => {
-            let currentNoteId = noteId ?? 0;
-            if (noteId === null) {
-                if (content.trim()) {
-                    const newNote = await createNote(content);
-                    currentNoteId = newNote.id;
-                    setNewNoteContent("");
+                if (editingNote) {
+                    handleSaveNote(editingNote.id, editingNote.content);
                 }
-            } else {
-                await updateNote({ id: noteId, content });
-            }
-
-            return currentNoteId;
-        };
-
-        const handleDeleteNote = async (noteId: number) => {
-            await deleteNote(noteId);
-            if (editingNote && editingNote.id === noteId) {
-                setEditingNote(null);
             }
         };
+    });
 
-        const onClickNote = (note: EditingNote) => {
-            if (editingNote && editingNote.id !== note.id) {
-                handleSaveNote(editingNote.id, editingNote.content);
-
-                note.lastSelectionStart ??= note.content.length;
-                handleEditNote(note);
+    const handleNoteChange = async (cursorPosition: number, content: string, noteId: number | null = null) => {
+        if (noteId === null) {
+            if (editingNote) {
+                await handleSaveNote(editingNote.id, editingNote.content);
             }
-        };
-        const getTextArea = (noteId: number) => {
-            const indexOfTextArea = sortedNotes.findIndex((note) => note.id === noteId);
-            return textareaEls[indexOfTextArea];
-        };
+            setNewNoteContent(content);
+            noteId = await handleSaveNote(null, content);
+        }
+
+        setEditingNote({ id: noteId, content, lastSelectionStart: cursorPosition });
+        //undoServiceRef.current.pushState(content);
+
+        if (autoSaveTimerRef.current) {
+            clearTimeout(autoSaveTimerRef.current);
+        }
+
+        autoSaveTimerRef.current = setTimeout(() => {
+            handleSaveNote(noteId, content);
+        }, AUTO_SAVE_INTERVAL); // Auto-save after 30 seconds
+    };
+
+    const debouncedHandleNoteChange = useCallback(debounce(handleNoteChange, 1000), [editingNote]);
+
+    const handleEditNote = (note: EditingNote) => {
+        setEditingNote(note);
+        //undoServiceRef.current = new UndoService(patientId);
+        //undoServiceRef.current.pushState(note.content);
+    };
+
+    const handleSaveNote = async (noteId: number | null = null, content: string): Promise<number> => {
+        let currentNoteId = noteId ?? 0;
+        if (noteId === null) {
+            if (content.trim()) {
+                const newNote = await createNote(content);
+                currentNoteId = newNote.id;
+                setNewNoteContent("");
+            }
+        } else {
+            await updateNote({ id: noteId, content });
+        }
+
+        return currentNoteId;
+    };
+
+    const handleDeleteNote = async (noteId: number) => {
+        await deleteNote(noteId);
+        if (editingNote && editingNote.id === noteId) {
+            setEditingNote(null);
+        }
+    };
+
+    const onClickNote = (note: EditingNote) => {
+        if (editingNote && editingNote.id !== note.id) {
+            handleSaveNote(editingNote.id, editingNote.content);
+
+            note.lastSelectionStart ??= note.content.length;
+            handleEditNote(note);
+        }
+    };
+    const getTextArea = (noteId: number) => {
+        const indexOfTextArea = sortedNotes.findIndex((note) => note.id === noteId);
+        return textareaEls[indexOfTextArea];
+    };
+
+    const isLastNote = (noteId: number | null | undefined) => {
+        return !!noteId && noteId === sortedNotes[sortedNotes.length - 1].id;
+    };
 
         /* const handleUndo = () => {
         const previousState = undoServiceRef.current.undo();
