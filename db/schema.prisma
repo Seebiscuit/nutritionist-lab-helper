@@ -28,7 +28,7 @@ model PatientGroup {
 }
 
 model Lab {
-  id           Int      @id @default(autoincrement())
+  id             String   @id @unique
   patient         Patient     @relation(fields: [patientId], references: [id])
   patientId       Int
   collectedDate DateTime

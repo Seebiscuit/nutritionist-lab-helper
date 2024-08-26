@@ -2,8 +2,10 @@ import { PrismaClient, Lab, Prisma, Patient } from '@prisma/client';
 import { parse } from 'csv-parse/sync';
 import { patientRepository } from './patient-repository';
 import { BEGINNING_OF_EPOCH_TIME } from "@/app/api/constants";
+import { generateLabId } from '@/util/lab-id-hash';
 
 interface LabRecord {
+    id: string;
     patientId: number;
     collectedDate: string;
     results: LabResultJson;
@@ -28,18 +30,8 @@ export const labRepository = {
         });
     },
 
-    async createLab(patientId: number, collectedDate: Date, results: LabResultJson): Promise<Lab> {
-        return prisma.lab.create({
-            data: {
-                patientId: patientId,
-                collectedDate,
-                results,
-            },
-        });
-    },
-
     async createLabs(labs: LabRecord[]): Promise<void> {
-        await prisma.lab.createMany({ data: labs });
+        await prisma.lab.createMany({ data: labs, skipDuplicates: true });
     },
 
     async processLabsCsv(csvContent: string): Promise<void> {
@@ -77,6 +69,7 @@ function generateBatchRecords(records: LabCSVModel[], allPatients: { id: number;
         ];
 
         for (const field of labFields) {
+
             const value = record[`${field}Field${labFields.indexOf(field) + 2}` as unknown as keyof LabCSVModel];
             if (value) {
                 results.push({
@@ -86,7 +79,8 @@ function generateBatchRecords(records: LabCSVModel[], allPatients: { id: number;
                 });
             }
         }
-        batchRecords.push({ patientId, collectedDate, results });
+        const id = generateLabId(patientId, collectedDate, results);
+        batchRecords.push({ id, patientId, collectedDate, results });
     }
     return batchRecords;
 }

@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "dev:db:push": "dotenv -e .env.development.local -- npx prisma db push",
-    "dev:db:studio": "dotenv -e .env.development.local -- npx prisma studio"
+    "dev:db:studio": "dotenv -e .env.development.local -- npx prisma studio",
+    "dev:db:reset:careful": "dotenv -e .env.development.local -- npx prisma migrate reset"
   },
   "prisma": {
     "schema": "db/schema.prisma"
