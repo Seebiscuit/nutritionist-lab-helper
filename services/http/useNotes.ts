@@ -51,6 +51,17 @@ export const useNotes = (patientId: number) => {
         }
     };
 
+    const deleteNote = async (id: number) => {
+        try {
+            await apiBuilder(NOTES_ROUTE)
+                .addQueryParams({ id })
+                .method('DELETE')
+                .send();
+        } catch (error) {
+            console.error("Error deleting note:", error);
+            throw error;
+        }
+    };
 
     const notesQuery = useQuery<Note[], Error>({
         queryKey: [NOTES_QUERY_KEY, patientId],
@@ -77,6 +88,16 @@ export const useNotes = (patientId: number) => {
         },
     });
 
+    const deleteNoteMutation = useMutation({
+        mutationFn: deleteNote,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [NOTES_QUERY_KEY, patientId] });
+        },
+        onError: (error) => {
+            console.error("Delete note mutation failed:", error);
+        },
+    });
+
     return {
         notes: notesQuery.data ?? [],
         isLoading: notesQuery.isLoading,
@@ -84,5 +105,6 @@ export const useNotes = (patientId: number) => {
         error: notesQuery.error,
         createNote: createNoteMutation.mutateAsync,
         updateNote: updateNoteMutation.mutateAsync,
+        deleteNote: deleteNoteMutation.mutateAsync,
     };
 };

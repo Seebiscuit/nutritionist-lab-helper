@@ -35,3 +35,15 @@ export const PUT = withErrorHandling(async (req: NextRequest) => {
     const updatedNote = await noteRepository.updateNote(id, content);
     return NextResponse.json(updatedNote);
 });
+
+export const DELETE = withErrorHandling(async (req: NextRequest) => {
+    const url = new URL(req.url);
+    const id = url.searchParams.get('id');
+
+    if (!id) {
+        return NextResponse.json({ error: 'Note ID is required' }, { status: 400 });
+    }
+
+    await noteRepository.deleteNote(parseInt(id, 10));
+    return NextResponse.json({ message: 'Note deleted successfully' }, { status: 200 });
+});
