@@ -20,10 +20,11 @@ interface UpdateGroupInput extends CreateGroupInput {
 
 // Fetch all groups
 export const useGetPatientGroups = () => {
-    return useQuery<PatientGroup[], Error>({
+    return { data: [] as PatientGroup[], isLoading: false, error: undefined }
+    /* return useQuery<PatientGroup[], Error>({
         queryKey: [GROUPS_QUERY_KEY],
         queryFn: () => apiBuilder(GROUPS_ROUTE).send<PatientGroup[]>()
-    });
+    }); */
 };
 
 // Create a new group
