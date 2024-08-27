@@ -148,7 +148,7 @@ const NotesComponent: React.FC<NotesComponentProps> = ({ patientId }) => {
         const sortedNotes = [...notes].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
         return (
-            <div className={`bg-gray-50 border rounded p-4`}>
+            <div className={`bg-gray-50 text-gray-700 border rounded p-4`}>
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-bold">Patient Notes</h2>
                     <div>
