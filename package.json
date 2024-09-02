@@ -5,11 +5,11 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "dotenv -e .env.local -- next start",
     "lint": "next lint",
-    "dev:db:push": "dotenv -e .env.development.local -- npx prisma db push",
-    "dev:db:studio": "dotenv -e .env.development.local -- npx prisma studio",
-    "dev:db:reset:careful": "dotenv -e .env.development.local -- npx prisma migrate reset"
+    "db:local:push": "dotenv -e .env.local -- npx prisma db push",
+    "db:local:studio": "dotenv -e .env.local -- npx prisma studio",
+    "db:local:reset:careful": "dotenv -e .env.local -- npx prisma migrate reset",
   },
   "prisma": {
     "schema": "db/schema.prisma"
