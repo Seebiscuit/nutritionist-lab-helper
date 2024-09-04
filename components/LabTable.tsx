@@ -21,12 +21,11 @@ interface LabTableProps {
 const LabTable: React.FC<LabTableProps> = ({ onClickPatient }) => {
     const { selectedPatients } = useSelectedPatients();
     const { data: patientsWithLabs, isLoading, error } = useFetchPatientsWithLabs(selectedPatients);
-    const [dateRange, setDateRange] = useState<string>("last");
+    const [dateRange, setDateRange] = useState<string>("last90days");
     const labs = useMemo(() => {
         if (!patientsWithLabs) return [];
 
         return patientsWithLabs
-            .filter((patient) => selectedPatients.includes(patient.id))
             .flatMap((patient) => {
                 return patient.labs.map((lab) => {
                     const labResults = lab.results as LabResult[];
@@ -43,8 +42,13 @@ const LabTable: React.FC<LabTableProps> = ({ onClickPatient }) => {
 
                     return { ...lab, patientName: patient.name };
                 });
+            })
+            .sort((a, b) => {
+                 if (a.patientName < b.patientName) return -1;
+                 if (a.patientName > b.patientName) return 1;
+                 return new Date(b.collectedDate).getTime() - new Date(a.collectedDate).getTime();
             });
-    }, [patientsWithLabs, selectedPatients]);
+    }, [patientsWithLabs]);
 
     const filterLabsByDateRange = (labs: PatientLab[]) => {
         switch (dateRange) {
@@ -101,9 +105,9 @@ const LabTable: React.FC<LabTableProps> = ({ onClickPatient }) => {
                     <option value="last">Last lab</option>
                     <option value="last2">Last 2 labs</option>
                     <option value="last3">Last 3 labs</option>
-                    <option value="last7days">Last 30 days</option>
-                    <option value="last14days">Last 60 days</option>
-                    <option value="last14days">Last 90 days</option>
+                    <option value="last30days">Last 30 days</option>
+                    <option value="last60days">Last 60 days</option>
+                    <option value="last90days">Last 90 days</option>
                 </select>
             </div>
             <table className="bg-purple-200 min-w-full bg-white border">
