@@ -120,7 +120,7 @@ const NotesComponent: React.FC<NotesComponentProps> = ({ patientId }) => {
     };
 
     const isLastNote = (noteId: number | null | undefined) => {
-        return !!noteId && noteId === sortedNotes[sortedNotes.length - 1].id;
+        return !!noteId && noteId === sortedNotes?.[sortedNotes.length - 1]?.id;
     };
 
         /* const handleUndo = () => {
