@@ -43,3 +43,11 @@ export const useFetchPatientsWithLabs = (ids: number[]) => {
         enabled: ids.length > 0,
     });
 };
+
+export const useFetchPatient = (id: number) => {
+    return useQuery<Patient, Error>({
+        queryKey: [PATIENTS_QUERY_KEY, id],
+        queryFn: () => apiBuilder(`${PATIENTS_ROUTE}/${id}`).send(),
+        enabled: !!id,
+    });
+};
