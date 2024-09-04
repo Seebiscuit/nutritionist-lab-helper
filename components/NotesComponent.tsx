@@ -5,6 +5,7 @@ import { UndoService } from "@/services/undoService";
 import useElementArrayRefs from "@/util/frontend/hooks/useElementArrayRefs";
 import { debounce } from "@/util/frontend/debounce";
 import { useMount } from "@/util/frontend/hooks/useMount";
+import { useFetchPatient } from "@/services/http/usePatients";
 interface NotesComponentProps {
     patientId: number;
 }
@@ -18,6 +19,7 @@ interface EditingNote {
 const AUTO_SAVE_INTERVAL = 30000;
 
 const NotesComponent: React.FC<NotesComponentProps> = ({ patientId }) => {
+    const {data: patient, isLoading: isLoadingPatient, isError }= useFetchPatient(patientId);
     const { notes, isLoading, createNote, updateNote, deleteNote } = useNotes(patientId);
     const [editingNote, setEditingNote] = useState<EditingNote | null>(null);
 
@@ -150,7 +152,7 @@ const NotesComponent: React.FC<NotesComponentProps> = ({ patientId }) => {
         return (
             <div className={`bg-gray-50 text-gray-700 border rounded p-4`}>
                 <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold">Patient Notes</h2>
+                    <h2 className="text-xl font-bold">Patient Notes for {patient?.name}</h2>
                     <div>
                         {/* <button onClick={handleUndo} className="mr-2 p-1 bg-gray-200 rounded">
                         Undo
