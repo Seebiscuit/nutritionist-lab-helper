@@ -40,6 +40,10 @@ const LabTable: React.FC<LabTableProps> = ({ onClickPatient }) => {
                         }
                     });
 
+                    labResults.sort((a, b) => {
+                        return LAB_FIELDS.indexOf(a.column) - LAB_FIELDS.indexOf(b.column);
+                    });
+
                     return { ...lab, patientName: patient.name };
                 });
             })
