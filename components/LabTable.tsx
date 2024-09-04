@@ -48,9 +48,9 @@ const LabTable: React.FC<LabTableProps> = ({ onClickPatient }) => {
                 });
             })
             .sort((a, b) => {
-                 if (a.patientName < b.patientName) return -1;
-                 if (a.patientName > b.patientName) return 1;
-                 return new Date(b.collectedDate).getTime() - new Date(a.collectedDate).getTime();
+                if (a.patientName < b.patientName) return -1;
+                if (a.patientName > b.patientName) return 1;
+                return new Date(b.collectedDate).getTime() - new Date(a.collectedDate).getTime();
             });
     }, [patientsWithLabs]);
 
@@ -96,6 +96,14 @@ const LabTable: React.FC<LabTableProps> = ({ onClickPatient }) => {
         return filterLabsByDateRange(labs);
     }, [labs, dateRange]);
 
+    // This hook will load the note if a single patient is selected
+    useEffect(() => {
+        if (selectedPatients.length === 1) {
+            const patientId = selectedPatients[0];
+            onClickPatient(patientId);
+        }
+    }, [selectedPatients, onClickPatient]);
+
     if (error) return <div>Error loading labs: {error.message}</div>;
 
     return (
@@ -135,9 +143,12 @@ const LabTable: React.FC<LabTableProps> = ({ onClickPatient }) => {
                     )}
                     {filteredLabs.map((lab) => (
                         <tr key={lab.id}>
-                            <td className="border p-2 hover:underline cursor-pointer"
+                            <td
+                                className="border p-2 hover:underline cursor-pointer"
                                 onClick={() => onClickPatient(lab.patientId)}
-                            >{lab.patientName}</td>
+                            >
+                                {lab.patientName}
+                            </td>
                             <td className="border p-2">{new Date(lab.collectedDate).toLocaleDateString()}</td>
                             {(lab.results as LabResult[]).map((result) => (
                                 <td
